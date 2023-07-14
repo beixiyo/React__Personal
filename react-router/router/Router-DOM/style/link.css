@@ -1,0 +1,9 @@
+a {
+    color: inherit;
+    cursor: pointer;
+}
+
+.active {
+    color: #f40;
+    font-weight: 700;
+}
