@@ -3,7 +3,7 @@
 
 实现 *React* 全家桶
 
-- react-mini
+- mini-react
 - router
 - redux
 - redux-saga
