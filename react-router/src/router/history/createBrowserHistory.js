@@ -1,5 +1,5 @@
-import ListenerManager from "./ListenerManager";
-import BlockManager from "./BlockManager";
+import ListenerManager from "./ListenerManager"
+import BlockManager from "./BlockManager"
 
 /**
  * 创建一个history api的history对象
@@ -10,12 +10,12 @@ export default function createBrowserHistory(options = {}) {
         basename = "",
         forceRefresh = false,
         keyLength = 6,
-        getUserConfirmation = (message, callback) => callback(window.confirm(message))
-    } = options;
-    const listenerManager = new ListenerManager();
-    const blockManager = new BlockManager(getUserConfirmation);
+        getUserConfirmation = (msg, next) => next(window.confirm(msg))
+    } = options
+    const listenerManager = new ListenerManager()
+    const blockManager = new BlockManager(getUserConfirmation)
 
-    addDomListener();
+    addDomListener()
 
     const history = {
         action: "POP",
@@ -29,18 +29,19 @@ export default function createBrowserHistory(options = {}) {
         replace,
         listen,
         location: createLocation(basename)
-    };
-    //返回history对象
-    return history;
+    }
+
+    return history
+
 
     function go(step) {
-        window.history.go(step);
+        window.history.go(step)
     }
     function goBack() {
-        window.history.back();
+        window.history.back()
     }
     function goForward() {
-        window.history.forward();
+        window.history.forward()
     }
 
     /**
@@ -49,65 +50,68 @@ export default function createBrowserHistory(options = {}) {
      * @param {*} state 附加的状态数据，如果第一个参数是对象，该参数无效
      */
     function push(path, state) {
-        changePage(path, state, true);
+        changePage(path, state, true)
     }
 
     function replace(path, state) {
-        changePage(path, state, false);
+        changePage(path, state, false)
     }
 
     /**
-     * 抽离的，可用于实现push或replace功能的方法
+     * 可用于实现 push 或 replace 功能的方法
      * @param {*} path 
      * @param {*} state 
      * @param {*} isPush 
      */
     function changePage(path, state, isPush) {
-        let action = "PUSH";
+        let action = "PUSH"
         if (!isPush) {
-            action = "REPLACE";
+            action = "REPLACE"
         }
-        const pathInfo = handlePathAndState(path, state, basename);
-        const location = createLoactionFromPath(pathInfo);
+        const pathInfo = handlePathAndState(path, state, basename)
+        const location = createLoactionFromPath(pathInfo)
+
+        // 让阻塞决定是否跳转
         blockManager.triggerBlock(location, action, () => {
             if (isPush) {
                 window.history.pushState({
                     key: createKey(keyLength),
                     state: pathInfo.state
-                }, null, pathInfo.path);
+                }, null, pathInfo.path)
             }
             else {
                 window.history.replaceState({
                     key: createKey(keyLength),
                     state: pathInfo.state
-                }, null, pathInfo.path);
+                }, null, pathInfo.path)
             }
-            listenerManager.triggerListener(location, action);
-            //改变action
-            history.action = action;
-            //改变location
-            history.location = location;
+
+            // pushState 或 replaceState不会触发 popstate 事件，所以需要手动触发
+            listenerManager.triggerListener(location, action)
+            history.action = action
+            history.location = location
+
             if (forceRefresh) {
-                //强制刷新
-                window.location.href = pathInfo.path;
+                // 强制刷新
+                window.location.href = pathInfo.path
             }
-        });
+        })
     }
 
     /**
      * 添加对地址变化的监听
      */
     function addDomListener() {
-        //popstate事件，仅能监听前进、后退、用户对地址hash的改变
-        //无法监听到pushState、replaceState
+        // popstate 事件，仅能监听前进、后退、用户对地址hash的改变
+        // 无法监听到pushState、replaceState
         window.addEventListener("popstate", () => {
-            const location = createLocation(basename);
-            const action = "POP";
+            const location = createLocation(basename)
+            const action = "POP"
             blockManager.triggerBlock(location, action, () => {
-                listenerManager.triggerListener(location, "POP");
-                history.location = location;
-            });
-        });
+                listenerManager.triggerListener(location, action)
+                history.location = location
+            })
+        })
     }
 
     /**
@@ -115,22 +119,22 @@ export default function createBrowserHistory(options = {}) {
      * @param {*} listener 
      */
     function listen(listener) {
-        return listenerManager.addListener(listener);
+        return listenerManager.addListener(listener)
     }
 
     function block(prompt) {
-        return blockManager.block(prompt);
+        return blockManager.block(prompt)
     }
 
     function createHref(location) {
-        let { pathname = "/", search = "", hash = "" } = location;
+        let { pathname = "/", search = "", hash = "" } = location
         if (search.charAt(0) === "?" && search.length === 1) {
-            search = "";
+            search = ""
         }
         if (hash.charAt(0) === "#" && hash.length === 1) {
-            hash = "";
+            hash = ""
         }
-        return basename + pathname + search + hash;
+        return basename + pathname + search + hash
     }
 }
 
@@ -144,26 +148,26 @@ function handlePathAndState(path, state, basename) {
         return {
             path,
             state
-        };
+        }
     }
     else if (typeof path === "object") {
-        let pathResult = basename + path.pathname;
-        let { search = "", hash = "" } = path;
+        let pathResult = basename + path.pathname
+        let { search = "", hash = "" } = path
         if (search.charAt(0) !== "?") {
-            search = "?" + search;
+            search = "?" + search
         }
         if (hash.charAt(0) !== "#") {
-            hash = "#" + hash;
+            hash = "#" + hash
         }
-        pathResult += search;
-        pathResult += hash;
+        pathResult += search
+        pathResult += hash
         return {
             path: pathResult,
             state: path.state
-        };
+        }
     }
     else {
-        throw new TypeError("path must be string or object");
+        throw new TypeError("path must be string or object")
     }
 }
 
@@ -171,35 +175,34 @@ function handlePathAndState(path, state, basename) {
  * 创建一个location对象
  */
 function createLocation(basename = "") {
-    // window.location 
-    let pathname = window.location.pathname;
-    //处理basename的情况
-    const reg = new RegExp(`^${basename}`);
-    pathname = pathname.replace(reg, "");
+    let pathname = window.location.pathname
+    // 处理 basename 的情况
+    const reg = new RegExp(`^${basename}`)
+    pathname = pathname.replace(reg, "")
     const location = {
         hash: window.location.hash,
         search: window.location.search,
         pathname
-    };
-    //处理state
-    let state, historyState = window.history.state;
+    }
+
+    let state, historyState = window.history.state
     if (historyState === null) {
-        state = undefined;
+        state = undefined
     }
     else if (typeof historyState !== "object") {
-        state = historyState;
+        state = historyState
     }
     else {
         if ("key" in historyState) {
-            location.key = historyState.key;
-            state = historyState.state;
+            location.key = historyState.key
+            state = historyState.state
         }
         else {
-            state = historyState;
+            state = historyState
         }
     }
-    location.state = state;
-    return location;
+    location.state = state
+    return location
 }
 
 /**
@@ -208,35 +211,34 @@ function createLocation(basename = "") {
  * @param {*} basename 
  */
 function createLoactionFromPath(pathInfo, basename) {
-    //取出pathname
-    let pathname = pathInfo.path.replace(/[#?].*$/, "");
-    //处理basename的情况
-    let reg = new RegExp(`^${basename}`);
-    pathname = pathname.replace(reg, "");
-    //search
-    var questionIndex = pathInfo.path.indexOf("?");
-    var sharpIndex = pathInfo.path.indexOf("#");
-    let search;
+    let pathname = pathInfo.path.replace(/[#?].*$/, "")
+    let reg = new RegExp(`^${basename}`)
+    pathname = pathname.replace(reg, "")
+
+    // search
+    let questionIndex = pathInfo.path.indexOf("?")
+    let sharpIndex = pathInfo.path.indexOf("#")
+    let search
     if (questionIndex === -1 || questionIndex > sharpIndex) {
-        search = "";
+        search = ""
     }
     else {
-        search = pathInfo.path.substring(questionIndex, sharpIndex);
+        search = pathInfo.path.slice(questionIndex, sharpIndex)
     }
-    //hash
-    let hash;
+    // hash
+    let hash
     if (sharpIndex === -1) {
-        hash = "";
+        hash = ""
     }
     else {
-        hash = pathInfo.path.substr(sharpIndex);
+        hash = pathInfo.path.slice(sharpIndex)
     }
     return {
         hash,
         pathname,
         search,
         state: pathInfo.state
-    };
+    }
 }
 
 
@@ -245,5 +247,5 @@ function createLoactionFromPath(pathInfo, basename) {
  * @param {*} keyLength 
  */
 function createKey(keyLength) {
-    return Math.random().toString(36).substr(2, keyLength);
+    return Math.random().toString(36).slice(2, keyLength)
 }

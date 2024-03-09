@@ -1,6 +1,12 @@
 a {
     color: inherit;
     cursor: pointer;
+    display: block;
+    transition: .3s;
+
+    &:hover {
+        color: #f40;
+    }
 }
 
 .active {

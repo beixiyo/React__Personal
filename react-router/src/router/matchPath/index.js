@@ -1,4 +1,4 @@
-import pathToRegexp from "path-to-regexp";
+import pathToRegexp from "path-to-regexp"
 
 /**
  * 得到匹配结果（match对象），如果没有匹配，返回null
@@ -7,22 +7,23 @@ import pathToRegexp from "path-to-regexp";
  * @param {*} options 相关配置，该配置是一个对象，该对象中，可以出现：exact、sensitive、strict
  */
 export default function matchPath(path, pathname, options) {
-    const keys = [];//保存路径规则中的关键字
-    const regExp = pathToRegexp(path, keys, getOptions(options));
-    const result = regExp.exec(pathname); //匹配url地址
+    /** 保存路径规则中的关键字 */
+    const keys = []
+    const regExp = pathToRegexp(path, keys, getOptions(options))
+    const result = regExp.exec(pathname) 
     if (!result) {
-        return null; //没有匹配
+        return null 
     }
-    //匹配了
-    let groups = Array.from(result);
-    groups = groups.slice(1); //得到匹配的分组结果
-    const params = getParams(groups, keys);
+    
+    let groups = Array.from(result)
+    groups = groups.slice(1)
+    const params = getParams(groups, keys)
     return {
         isExact: pathname === result[0],
         params,
         path,
         url: result[0]
-    };
+    }
 }
 
 /**
@@ -35,7 +36,7 @@ function getOptions(options = {}) {
         sensitive: false,
         strict: false
     }
-    const opts = { ...defaultOptions, ...options };
+    const opts = { ...defaultOptions, ...options }
     return {
         sensitive: opts.sensitive,
         strict: opts.strict,
@@ -49,11 +50,11 @@ function getOptions(options = {}) {
  * @param {*} keys 
  */
 function getParams(groups, keys) {
-    const obj = {};
+    const obj = {}
     for (let i = 0; i < groups.length; i++) {
-        const value = groups[i];
-        const name = keys[i].name;
-        obj[name] = value;
+        const value = groups[i]
+        const name = keys[i].name
+        obj[name] = value
     }
-    return obj;
+    return obj
 }
