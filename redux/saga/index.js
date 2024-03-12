@@ -1,4 +1,4 @@
-export { default as sagaMiddleWare } from './sagaMiddleWare.js';
+export { default as sagaMiddleWare } from './sagaMiddleWare.js'
 export {
     call,
     delay,
@@ -9,4 +9,4 @@ export {
     cancel,
     takeEvery,
     all
-} from './effectTools/index.js';
+} from './effectTools/index.js'
