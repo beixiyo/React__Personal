@@ -7,4 +7,3 @@
 - router
 - redux
 - redux-saga
-- dva
